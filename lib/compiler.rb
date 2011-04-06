@@ -2,7 +2,6 @@
 
 class SyntaxNode
   attr_reader :input, :interval
-  attr_accessor :parent
 
   def initialize(input, interval)
     @input = input
@@ -10,44 +9,72 @@ class SyntaxNode
   end
 end
 
+class ParserState
+  attr_accessor :input, :index, :ast
+
+  def initialize(input, index, ast)
+    @input = input
+    @index = index
+    @ast = ast
+  end
+end
+
 class Parser
     
-    def initialize
-        @index = 0
-    end
-
-    def isMatch?( regex, input, index )
+    def isMatch?( regex, state )
         compiledRegex = Regexp.new(regex)
-
-        input.index(compiledRegex, index) == index
+        # TODO: is there a more effecient way to do this?
+        state.input.index(compiledRegex, state.index) == state.index
     end
 
-    def whiteSpace( input, index )
-        startIndex, result = index, ''
-        while isMatch?('\G[ \\t\\n\\r]', input, index)
-            index += 1
+    def whiteSpace( input, state )
+        startIndex = state.index
+        while isMatch?('\G[ \\t\\n\\r]', state)
+            state.index += 1
         end
-        SyntaxNode.new(input, startIndex...index)
+        if startIndex != state.index
+            return SyntaxNode.new(input, startIndex...state.index)
+        end
+        return false
+    end
+
+    def numeric( input, state )
+        startIndex = state.index
+        while isMatch?('\G[0-9]', state)
+            state.index += 1
+        end
+        if startIndex != state.index
+            return SyntaxNode.new(input, startIndex...state.index)
+        end
+        return false
     end
 
     def parse(input)
-        
-        # Parse Terminals first ( Including comments )
-        if result = whiteSpace( input, @index )
-            return result
-        end
+        state = ParserState.new(input, 0, [] )
 
-        #if result = numeric( input, index )
-            #return result
-        
-        # Parse symbols
-        #if result = symbol( input, index )
-            #return result
-        
-        # Parse Function defs
-        #if result = functionDef( input, index )
-        #    return result
-       
+        loop do
+            # Parse white space first ( Including comments )
+            if result = whiteSpace( input, state )
+                state.ast << result
+                next
+            end
+
+            if result = numeric( input, state )
+                state.ast << result
+                next
+            end
+            
+            # Parse symbols
+            #if result = symbol( input, index )
+                #return result
+            
+            # Parse Function defs
+            #if result = functionDef( input, index )
+            #    return result
+
+           break 
+        end
+        return state
    end
 end
 
