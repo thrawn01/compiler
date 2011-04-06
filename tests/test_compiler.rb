@@ -1,12 +1,15 @@
+#! /usr/bin/ruby -s
+
 require 'test/unit'
+require 'lib/compiler'
 
 class CompilerTest < Test::Unit::TestCase
 
   def test_getToken
-    compiler = Compiler.new()
-    tokenType = compiler.getToken("add(1,2)")
-    assert_equal(:symbol, token)
-    assert_equal("add", compiler.symbol)
+    parser = Parser.new()
+    ast = parser.parse("    add(1,2)")
+    assert_equal(ast.input, "    add(1,2)" )
+    assert_equal(ast.interval, 0...4 )
   end
 
 end
