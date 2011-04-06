@@ -12,6 +12,14 @@ class CompilerTest < Test::Unit::TestCase
     assert_equal(0...4, state.ast[0].interval )
   end
 
+  def test_parseSymbol
+    parser = Parser.new()
+    state = parser.parse("    add(1,2)")
+    assert_equal("    add(1,2)", state.ast[0].input )
+    assert_equal(0...4, state.ast[0].interval )
+    assert_equal(4...7, state.ast[1].interval )
+  end
+
   def test_parseNumeric
     parser = Parser.new()
     state = parser.parse("   1   ")

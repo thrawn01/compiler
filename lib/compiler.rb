@@ -49,11 +49,23 @@ class Parser
         return false
     end
 
+    def symbol( input, state )
+        startIndex = state.index
+        while isMatch?('\G[A-Za-z]', state)
+            state.index += 1
+        end
+        if startIndex != state.index
+            return SyntaxNode.new(input, startIndex...state.index)
+        end
+        return false
+    end
+
     def parse(input)
         state = ParserState.new(input, 0, [] )
 
         loop do
-            # Parse white space first ( Including comments )
+
+            # white space includes comments
             if result = whiteSpace( input, state )
                 state.ast << result
                 next
@@ -63,15 +75,12 @@ class Parser
                 state.ast << result
                 next
             end
-            
-            # Parse symbols
-            #if result = symbol( input, index )
-                #return result
-            
-            # Parse Function defs
-            #if result = functionDef( input, index )
-            #    return result
 
+            if result = symbol( input, state )
+                state.ast << result
+                next
+            end
+            
            break 
         end
         return state
