@@ -10,12 +10,12 @@ class SyntaxNode
 end
 
 class LexerState
-  attr_accessor :input, :index, :ast
+  attr_accessor :input, :index, :syntax
 
-  def initialize(input, index, ast)
+  def initialize(input, index, syntax)
     @input = input
     @index = index
-    @ast = ast
+    @syntax = syntax
   end
 end
 
@@ -67,24 +67,29 @@ class Lexer
 
             # white space includes comments
             if result = whiteSpace( input, state )
-                state.ast << result
+                state.syntax << result
                 next
             end
 
             if result = numeric( input, state )
-                state.ast << result
+                state.syntax << result
                 next
             end
 
             if result = symbol( input, state )
-                state.ast << result
+                state.syntax << result
                 next
             end
             
            break 
         end
         return state
-   end
+    end
+
 end
 
+
+class Parser
+
+end
 
