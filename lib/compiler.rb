@@ -9,7 +9,7 @@ class SyntaxNode
   end
 end
 
-class ParserState
+class LexerState
   attr_accessor :input, :index, :ast
 
   def initialize(input, index, ast)
@@ -19,7 +19,7 @@ class ParserState
   end
 end
 
-class Parser
+class Lexer
     
     def isMatch?( regex, state )
         compiledRegex = Regexp.new(regex)
@@ -61,7 +61,7 @@ class Parser
     end
 
     def parse(input)
-        state = ParserState.new(input, 0, [] )
+        state = LexerState.new(input, 0, [] )
 
         loop do
 
