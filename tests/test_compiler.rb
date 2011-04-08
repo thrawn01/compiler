@@ -7,15 +7,15 @@ class CompilerTest < Test::Unit::TestCase
 
   def test_parseWhiteSpace
     lexer = Lexer.new()
-    state = lexer.parse("    add(1,2)")
-    assert_equal("    add(1,2)", state.ast[0].input )
+    state = lexer.parse("    add")
+    assert_equal("    add", state.ast[0].input )
     assert_equal(0...4, state.ast[0].interval )
   end
 
   def test_parseSymbol
     lexer = Lexer.new()
-    state = lexer.parse("    add(1,2)")
-    assert_equal("    add(1,2)", state.ast[0].input )
+    state = lexer.parse("    add")
+    assert_equal("    add", state.ast[0].input )
     assert_equal(0...4, state.ast[0].interval )
     assert_equal(4...7, state.ast[1].interval )
   end
@@ -32,12 +32,12 @@ class CompilerTest < Test::Unit::TestCase
     #parser = Parser.new()
     #lexer = Lexer.new()
     #ast = parser.parse(lexer, "add(1,2)")
-#
+
     #assert(Call === ast)
     #assert_equal("add", ast.name)
-#    assert_equal(2, ast.arguments.size)
+    #assert_equal(2, ast.arguments.size)
     #assert(Fixnum === ast.arguments[0])
     #assert(Fixnum === ast.arguments[1])
-#
-#  end
+
+  #end
 end
