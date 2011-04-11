@@ -60,6 +60,17 @@ class Lexer
         return false
     end
 
+    def token( input, state )
+        startIndex = state.index
+        while isMatch?('\G\W', state)
+            state.index += 1
+        end
+        if startIndex != state.index
+            return SyntaxNode.new(input, startIndex...state.index)
+        end
+        return false
+    end
+
     def parse(input)
         state = LexerState.new(input, 0, [] )
 
@@ -80,8 +91,17 @@ class Lexer
                 state.syntax << result
                 next
             end
+    
+            # Match everything else
+            if result = token( input, state )
+                state.syntax << result
+                next
+            end
             
-           break 
+            if input.length == state.index 
+               break 
+            end
+
         end
         return state
     end
@@ -90,6 +110,21 @@ end
 
 
 class Parser
+    
+    def parse( lexer, input )
+       state = lexer.parse( input )
+       ast = []
 
+       while token = state.nextToken()
+            if token.type == :symbol
+                symbol = lookupSymbol(token.value)
+                if symbol == :function
+                    arguments = parseArguments()
+                    ast << Function.new(arguments)
+                end
+                    
+            end
+       end
+    end
 end
 
