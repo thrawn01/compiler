@@ -10,6 +10,7 @@ class CompilerTest < Test::Unit::TestCase
     state = lexer.parse("    add")
     assert_equal("    add", state.syntax[0].input )
     assert_equal(0...4, state.syntax[0].interval )
+    assert_equal(:whitespace, state.syntax[0].type )
   end
 
   def test_parseSymbol
@@ -18,6 +19,7 @@ class CompilerTest < Test::Unit::TestCase
     assert_equal("    add", state.syntax[0].input )
     assert_equal(0...4, state.syntax[0].interval )
     assert_equal(4...7, state.syntax[1].interval )
+    assert_equal(:symbol, state.syntax[1].type )
   end
 
   def test_parseNumeric
@@ -25,6 +27,7 @@ class CompilerTest < Test::Unit::TestCase
     state = lexer.parse("   1   ")
     assert_equal(0...3, state.syntax[0].interval )
     assert_equal(3...4, state.syntax[1].interval )
+    assert_equal(:number, state.syntax[1].type )
     assert_equal(4...7, state.syntax[2].interval )
   end
 
@@ -40,16 +43,16 @@ class CompilerTest < Test::Unit::TestCase
     assert_equal(10...11, state.syntax[5].interval )
   end
 
-  #def test_parser
+  def test_parser
     #parser = Parser.new()
     #lexer = Lexer.new()
     #ast = parser.parse(lexer, "add(1,2)")
 
-    #assert(Call === ast)
+    #assert(Function === ast)
     #assert_equal("add", ast.name)
     #assert_equal(2, ast.arguments.size)
-    #assert(Fixnum === ast.arguments[0])
-    #assert(Fixnum === ast.arguments[1])
+    #assert(Number === ast.arguments[0])
+    #assert(Number === ast.arguments[1])
 
-  #end
+  end
 end

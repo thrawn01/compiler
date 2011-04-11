@@ -1,22 +1,29 @@
 #!/usr/bin/env ruby -s
 
 class SyntaxNode
-  attr_reader :input, :interval
+    attr_reader :input, :interval, :type
 
-  def initialize(input, interval)
-    @input = input
-    @interval = interval
-  end
+    def initialize(input, interval, type)
+        @input = input
+        @interval = interval
+        @type = type
+    end
 end
 
 class LexerState
-  attr_accessor :input, :index, :syntax
+    attr_accessor :input, :index, :syntax
 
-  def initialize(input, index, syntax)
-    @input = input
-    @index = index
-    @syntax = syntax
-  end
+    def initialize(input, index, syntax)
+        @input = input
+        @index = index
+        @syntax = syntax
+    end
+
+    def nextToken()
+        for token in @syntax
+            yield token
+        end
+    end
 end
 
 class Lexer
@@ -33,18 +40,18 @@ class Lexer
             state.index += 1
         end
         if startIndex != state.index
-            return SyntaxNode.new(input, startIndex...state.index)
+            return SyntaxNode.new(input, startIndex...state.index, :whitespace)
         end
         return false
     end
 
-    def numeric( input, state )
+    def number( input, state )
         startIndex = state.index
         while isMatch?('\G[0-9]', state)
             state.index += 1
         end
         if startIndex != state.index
-            return SyntaxNode.new(input, startIndex...state.index)
+            return SyntaxNode.new(input, startIndex...state.index, :number)
         end
         return false
     end
@@ -55,7 +62,7 @@ class Lexer
             state.index += 1
         end
         if startIndex != state.index
-            return SyntaxNode.new(input, startIndex...state.index)
+            return SyntaxNode.new(input, startIndex...state.index, :symbol)
         end
         return false
     end
@@ -66,7 +73,7 @@ class Lexer
             state.index += 1
         end
         if startIndex != state.index
-            return SyntaxNode.new(input, startIndex...state.index)
+            return SyntaxNode.new(input, startIndex...state.index, :token)
         end
         return false
     end
@@ -82,7 +89,7 @@ class Lexer
                 next
             end
 
-            if result = numeric( input, state )
+            if result = number( input, state )
                 state.syntax << result
                 next
             end
@@ -105,26 +112,26 @@ class Lexer
         end
         return state
     end
-
+    
 end
 
 
 class Parser
     
     def parse( lexer, input )
-       state = lexer.parse( input )
-       ast = []
+        state = lexer.parse( input )
+        ast = []
 
-       while token = state.nextToken()
+        state.tokens { |token|
             if token.type == :symbol
                 symbol = lookupSymbol(token.value)
-                if symbol == :function
-                    arguments = parseArguments()
-                    ast << Function.new(arguments)
-                end
-                    
             end
-       end
+            if symbol == :function
+                arguments = parseArguments()
+                ast << Function.new(arguments)
+            end
+        }
+
     end
 end
 
