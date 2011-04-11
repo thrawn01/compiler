@@ -32,13 +32,30 @@ class LexerState
 end
 
 class Function
-    attr_accessor :symbol, :arguments
+    attr_accessor :name, :arguments
 
-    def initialize(symbol, arguments)
-        @symbol = symbol
+    def initialize(name, arguments)
+        @name = name
         @arguments = arguments
     end
 end
+
+class Number
+    attr_accessor :value
+
+    def initialize(value)
+        @value = value
+    end
+end
+
+class String
+    attr_accessor :value
+
+    def initialize(value)
+        @value = value
+    end
+end
+
 
 class Lexer
     
@@ -92,7 +109,7 @@ class Lexer
         return false
     end
 
-    def parse(input)
+    def lex(input)
         state = LexerState.new(input, 0, [] )
 
         loop do
@@ -134,42 +151,54 @@ end
 class Parser
     
     def initialize()
-        @symbolTable = [ 'add' ]
+        @symbolTable = { 'add'=>:function }
+        @errors = []
     end
-    
-    def parseExpression( state )
-        while token = state.nextToken()
-            
-        end
+   
+    def lex( input )
+        Lexer.new().lex(input)
     end
 
-    def parse( lexer, input, stopOn )
-        state = lexer.parse( input )
+    def parse( state, stopOn )
         ast = []
 
         while token = state.nextToken()
-            # Look for a pre-defined symbol
             if token.type == :symbol
-                symbol = lookupSymbol(token)
+                # Is the symbol in our symbol table
+                symbol = @symbolTable[token.value]
+
+                # Is it a function?
                 if symbol == :function
-                    ast << Function.new(symbol, parseExpression(state))
+                    ast << Function.new(token.value, parse(state, ')'))
                 end
-                errors << "Unknown symbol '%s'" % symbol
+
+                # Is it a variable?
+                if symbol == :variable
+                    @errors << "variables un-implemented"
+                end
+
+                @errors << "Unknown symbol '%s'" % symbol
             end
+
+            # Handle numbers, ( these are the only terminals )
             if token.type == :number
                 ast << Number.new(token.value)
             end
 
-            # Find our token to stop parsing on
+            # Handle string literals 
+            if token.type == :string
+                ast << String.new(token.value)
+            end
+
+            # Stop parsing when we see this token
             if token.value == stopOn
                 return ast
             end
         end
 
+        return ast
+
     end
 
-    def lookupSymbol( token )
-        @symbolTable[token.value]
-    end
 end
 
