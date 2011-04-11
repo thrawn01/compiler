@@ -8,6 +8,10 @@ class SyntaxNode
         @interval = interval
         @type = type
     end
+
+    def value
+        @input[@interval]
+    end
 end
 
 class LexerState
@@ -17,12 +21,22 @@ class LexerState
         @input = input
         @index = index
         @syntax = syntax
+        @syntaxIndex = 0
     end
 
     def nextToken()
-        for token in @syntax
-            yield token
-        end
+        token = @syntax[@syntaxIndex]
+        @syntaxIndex += 1
+        return token 
+    end
+end
+
+class Function
+    attr_accessor :symbol, :arguments
+
+    def initialize(symbol, arguments)
+        @symbol = symbol
+        @arguments = arguments
     end
 end
 
@@ -69,7 +83,7 @@ class Lexer
 
     def token( input, state )
         startIndex = state.index
-        while isMatch?('\G\W', state)
+        if isMatch?('\G\W', state)
             state.index += 1
         end
         if startIndex != state.index
@@ -106,6 +120,7 @@ class Lexer
             end
             
             if input.length == state.index 
+               state.syntax << SyntaxNode.new(input, state.index...(state.index + 1), :token)
                break 
             end
 
@@ -118,20 +133,43 @@ end
 
 class Parser
     
-    def parse( lexer, input )
+    def initialize()
+        @symbolTable = [ 'add' ]
+    end
+    
+    def parseExpression( state )
+        while token = state.nextToken()
+            
+        end
+    end
+
+    def parse( lexer, input, stopOn )
         state = lexer.parse( input )
         ast = []
 
-        state.tokens { |token|
+        while token = state.nextToken()
+            # Look for a pre-defined symbol
             if token.type == :symbol
-                symbol = lookupSymbol(token.value)
+                symbol = lookupSymbol(token)
+                if symbol == :function
+                    ast << Function.new(symbol, parseExpression(state))
+                end
+                errors << "Unknown symbol '%s'" % symbol
             end
-            if symbol == :function
-                arguments = parseArguments()
-                ast << Function.new(arguments)
+            if token.type == :number
+                ast << Number.new(token.value)
             end
-        }
 
+            # Find our token to stop parsing on
+            if token.value == stopOn
+                return ast
+            end
+        end
+
+    end
+
+    def lookupSymbol( token )
+        @symbolTable[token.value]
     end
 end
 
