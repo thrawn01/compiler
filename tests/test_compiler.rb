@@ -57,4 +57,23 @@ class CompilerTest < Test::Unit::TestCase
     assert(Number === ast[0].arguments[0])
     assert(Number === ast[0].arguments[1])
   end
+
+  def test_generator
+    parser = Parser.new()
+    ast = parser.parse(parser.lex( "add(1,2)" ), "")
+
+    #g = Orange::Generator.new
+    #g.preamble
+    #g.function("test") do |gf|
+        #str = gf.new_string(">> %d\n")
+        #num = gf.new_number(7)
+        #gf.assign("x", str)
+        #gf.assign("y", num)
+        #gf.call("printf", gf.load("x"), gf.load("y"))
+    #end
+    #g.call("test")
+    #g.finish
+    #puts g.inspect
+    #g.run.inspect
+
 end
