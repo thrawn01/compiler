@@ -1,7 +1,10 @@
-#! /usr/bin/ruby -s
+#!/usr/bin/python
 
-require 'test/unit'
-require 'lib/compiler'
+from ollie import Lexer,Parser
+import unittest, logging
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+log = logging.getLogger( "test" )
 
 class CompilerTest(unittest.TestCase):
 
@@ -21,7 +24,7 @@ class CompilerTest(unittest.TestCase):
     assert_equal("    ", state.syntax[0].value )
 
   def test_parseSymbol():
-    state = Lexer()lex("    add")
+    state = Lexer().lex("    add")
     assert_equal("    add", state.syntax[0].input )
     assert_equal((0,4), state.syntax[0].interval )
     assert_equal((4,7), state.syntax[1].interval )
@@ -29,7 +32,7 @@ class CompilerTest(unittest.TestCase):
     assert_equal('add', state.syntax[1].value )
     assert_equal('', state.syntax[2].value )
 
-  def test_parseNumeric();
+  def test_parseNumeric():
     state = Lexer().lex("   1   ")
     assert_equal((0,3), state.syntax[0].interval )
     assert_equal((3,4), state.syntax[1].interval )
