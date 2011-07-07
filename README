@@ -1,1 +1,7 @@
-This is my learning compilers project
+A Simple Compiler using llvm-py
+
+$ cd compiler
+$ virtualenv --no-site-packages .
+$ easy_install nose
+$ nosetests tests/test_compiler.py
+

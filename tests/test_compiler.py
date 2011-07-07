@@ -1,72 +1,72 @@
 #!/usr/bin/python
 
-from ollie import Lexer,Parser
-import unittest, logging
+from ollie import Lexer,Parser,Function,Number
+import unittest, logging, sys
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 log = logging.getLogger( "test" )
 
 class CompilerTest(unittest.TestCase):
 
-  def test_parseWhiteSpace():
+  def test_parseWhiteSpace(self):
     state = Lexer().lex("    add")
-    assert_equal("    add", state.syntax[0].input )
-    assert_equal((0,4), state.syntax[0].interval )
-    assert_equal('whitespace', state.syntax[0].type )
-    assert_equal("    ", state.syntax[0].value )
+    self.assertEqual("    add", state.syntax[0].input )
+    self.assertEquals((0,4), state.syntax[0].range )
+    self.assertEquals('whitespace', state.syntax[0].type )
+    self.assertEquals("    ", state.syntax[0].value() )
   
 
-  def test_parseWhiteSpace():
+  def test_parseWhiteSpace(self):
     state = Lexer().lex("    add")
-    assert_equal("    add", state.syntax[0].input )
-    assert_equal((0,4), state.syntax[0].interval )
-    assert_equal('whitespace', state.syntax[0].type )
-    assert_equal("    ", state.syntax[0].value )
+    self.assertEquals("    add", state.syntax[0].input )
+    self.assertEquals((0,4), state.syntax[0].range )
+    self.assertEquals('whitespace', state.syntax[0].type )
+    self.assertEquals("    ", state.syntax[0].value() )
 
-  def test_parseSymbol():
+  def test_parseSymbol(self):
     state = Lexer().lex("    add")
-    assert_equal("    add", state.syntax[0].input )
-    assert_equal((0,4), state.syntax[0].interval )
-    assert_equal((4,7), state.syntax[1].interval )
-    assert_equal('symbol', state.syntax[1].type )
-    assert_equal('add', state.syntax[1].value )
-    assert_equal('', state.syntax[2].value )
+    self.assertEquals("    add", state.syntax[0].input )
+    self.assertEquals((0,4), state.syntax[0].range )
+    self.assertEquals((4,7), state.syntax[1].range )
+    self.assertEquals('symbol', state.syntax[1].type )
+    self.assertEquals('add', state.syntax[1].value() )
+    self.assertEquals('', state.syntax[2].value() )
 
-  def test_parseNumeric():
-    state = Lexer().lex("   1   ")
-    assert_equal((0,3), state.syntax[0].interval )
-    assert_equal((3,4), state.syntax[1].interval )
-    assert_equal('number', state.syntax[1].type )
-    assert_equal('1', state.syntax[1].value )
-    assert_equal((4,7), state.syntax[2].interval )
+  def test_parseNumeric(self):
+    lexer = Lexer()
+    state = lexer.lex("   1   ")
+    self.assertEquals((0,3), state.syntax[0].range )
+    self.assertEquals((3,4), state.syntax[1].range )
+    self.assertEquals('number', state.syntax[1].type )
+    self.assertEquals('1', state.syntax[1].value() )
+    self.assertEquals((4,7), state.syntax[2].range )
 
-  def test_parseTokens():
+  def test_parseTokens(self):
     state = Lexer().lex("    add(1,2)\n")
-    assert_equal("    add(1,2)\n", state.syntax[0].input )
-    assert_equal((0,4), state.syntax[0].interval )
-    assert_equal((4,7), state.syntax[1].interval )
-    assert_equal((7,8), state.syntax[2].interval )
-    assert_equal((8,9), state.syntax[3].interval )
-    assert_equal((9,10), state.syntax[4].interval )
-    assert_equal((10,11), state.syntax[5].interval )
-    assert_equal((11,12), state.syntax[6].interval )
-    assert_equal((12,13), state.syntax[7].interval )
-    assert_equal('\n', state.syntax[7].value )
+    self.assertEquals("    add(1,2)\n", state.syntax[0].input )
+    self.assertEquals((0,4), state.syntax[0].range )
+    self.assertEquals((4,7), state.syntax[1].range )
+    self.assertEquals((7,8), state.syntax[2].range )
+    self.assertEquals((8,9), state.syntax[3].range )
+    self.assertEquals((9,10), state.syntax[4].range )
+    self.assertEquals((10,11), state.syntax[5].range )
+    self.assertEquals((11,12), state.syntax[6].range )
+    self.assertEquals((12,13), state.syntax[7].range )
+    self.assertEquals('\n', state.syntax[7].value() )
 
-  def test_parser():
+  def test_parser(self):
     parser = Parser()
     state = parser.lex( "add(1,2)" )
     ast = parser.parse(state, "")
 
-    assert(Function == ast[0])
-    assert_equal("add", ast[0].name)
-    assert_equal(2, ast[0].arguments.size)
-    assert(Number == ast[0].arguments[0])
-    assert(Number == ast[0].arguments[1])
-  end
+    assert(Function == ast[0].__class__)
+    self.assertEquals("add", ast[0].name)
+    self.assertEquals(2, len(ast[0].arguments))
+    assert(Number == ast[0].arguments[0].__class__)
+    assert(Number == ast[0].arguments[1].__class__)
 
-  def test_generator():
-    parser = Parser.new()
+  def test_generator(self):
+    parser = Parser()
     ast = parser.parse(parser.lex( "add(1,2)" ), "")
 
     #g = Orange::Generator.new
@@ -82,6 +82,4 @@ class CompilerTest(unittest.TestCase):
     #g.finish
     #puts g.inspect
     #g.run.inspect
-  end
 
-end
