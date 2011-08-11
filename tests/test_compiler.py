@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from ollie import Lexer,Parser,Function,Number
+from ollie import Lexer,Parser,Function,Number,Generator
 import unittest, logging, sys
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -61,13 +61,16 @@ class CompilerTest(unittest.TestCase):
 
     assert(Function == ast[0].__class__)
     self.assertEquals("add", ast[0].name)
-    self.assertEquals(2, len(ast[0].arguments))
-    assert(Number == ast[0].arguments[0].__class__)
-    assert(Number == ast[0].arguments[1].__class__)
+    self.assertEquals(2, len(ast[0].args))
+    assert(Number == ast[0].args[0].__class__)
+    assert(Number == ast[0].args[1].__class__)
 
   def test_generator(self):
     parser = Parser()
     ast = parser.parse(parser.lex( "add(1,2)" ), "")
+    gen = Generator()
+    gen.compile(ast);
+    print gen.module
 
     #g = Orange::Generator.new
     #g.preamble

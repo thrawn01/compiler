@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import re
+from llvm import *
+from llvm.core import *
 
 class SyntaxNode():
 
@@ -29,21 +31,29 @@ class LexerState():
 
 class Function():
 
-  def __init__(self, name, arguments):
+  def __init__(self, name, args):
     self.name = name
-    self.arguments = arguments
-
+    self.args = args
+    
+  def compile(self, builder):
+    if self.name == 'add':
+      return builder.add(self.args[0].compile(builder), self.args[1].compile(builder))
+        
 
 class Number():
 
   def __init__(self, value):
     self.value = value
+ 
+  def compile(self, builder):
+    return Constant.real( Type.int(), self.value) 
 
 
 class String():
 
   def initialize(self, value):
     self.value = value
+
 
 class Lexer():
     
@@ -168,4 +178,18 @@ class Parser():
       token = state.nextToken()
 
     return ast
+
+class Generator():
+
+  def __init__(self):
+    self.module = Module.new('generator')
+    # Create a main function with no arguments and add it to the module
+    self.main = self.module.add_function(Type.function(Type.int(), []), "main")
+    # Create a new builder with a single basic block
+    self.builder = Builder.new(self.main.append_basic_block("entry"))
+ 
+  def compile(self, ast):
+   ret = ast[0].compile(self.builder)
+   self.builder.ret(ret)
+   
 
