@@ -3,6 +3,7 @@
 import re
 from llvm import *
 from llvm.core import *
+from llvm.ee import ExecutionEngine, TargetData
 
 class SyntaxNode():
 
@@ -37,7 +38,7 @@ class Function():
     
   def compile(self, builder):
     if self.name == 'add':
-      return builder.add(self.args[0].compile(builder), self.args[1].compile(builder))
+      return builder.fadd(self.args[0].compile(builder), self.args[1].compile(builder))
         
 
 class Number():
@@ -46,7 +47,7 @@ class Number():
     self.value = value
  
   def compile(self, builder):
-    return Constant.real( Type.int(), self.value) 
+    return Constant.real( Type.double(), int(self.value)) 
 
 
 class String():
@@ -184,12 +185,17 @@ class Generator():
   def __init__(self):
     self.module = Module.new('generator')
     # Create a main function with no arguments and add it to the module
-    self.main = self.module.add_function(Type.function(Type.int(), []), "main")
+    self.main = self.module.add_function(Type.function(Type.double(), []), "main")
     # Create a new builder with a single basic block
     self.builder = Builder.new(self.main.append_basic_block("entry"))
+    # Create an executor engine for JIT and Interpreter execution
+    self.executor = ExecutionEngine.new(self.module)
  
   def compile(self, ast):
    ret = ast[0].compile(self.builder)
    self.builder.ret(ret)
+   return self
    
+  def execute(self):
+   return self.executor.run_function(self.main, [])
 
