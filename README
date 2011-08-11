@@ -6,7 +6,7 @@ $ source bin/activate
 $ cd lib
 
 # Compile LLVM
-$ tar -vzxf llvm-2.8.tar.gz
+$ tar -vzxf llvm-2.8.tgz
 $ cd llvm-2.8
 $ ./configure  --enable-pic --prefix=/usr/local/llvm-2.8 --disable-libffi
 $ make -j2 
@@ -14,9 +14,12 @@ $ sudo make install
 
 # Compile install llvm-py
 # export PATH="$PATH:/usr/local/llvm-2.8/bin"
+$ cd ..
 $ svn co http://llvm-py.googlecode.com/svn/trunk
+$ cd trunk
 $ python setup.py install
 
+$ cd ..
 $ easy_install nose
 $ nosetests tests/test_compiler.py
 
