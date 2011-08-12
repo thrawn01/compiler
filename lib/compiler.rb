@@ -138,11 +138,12 @@ class Lexer
                 next
             end
             
-            if input.length == state.index 
+            # If we reach the end of the input
+            if input.length == state.index
+               # Consider EOF a token
                state.syntax << SyntaxNode.new(input, state.index...(state.index + 1), :token)
                break 
             end
-
         end
         return state
     end
@@ -151,146 +152,138 @@ end
 
 
 class Parser
-    
-    def initialize()
-        @symbolTable = { 'add'=>:function }
-        @errors = []
-    end
-   
-    def lex( input )
-        Lexer.new().lex(input)
-    end
+  
+  def initialize()
+    @symbolTable = { 'add'=>:function }
+    @errors = []
+  end
+ 
+  def lex( input )
+    Lexer.new().lex(input)
+  end
 
-    def parse( state, stopOn )
-        ast = []
+  def parse( state, stopOn )
+    ast = []
 
-        while token = state.nextToken()
-            if token.type == :symbol
-                # Is the symbol in our symbol table
-                symbol = @symbolTable[token.value]
+    while token = state.nextToken()
+      if token.type == :symbol
+        # Is the symbol in our symbol table
+        symbol = @symbolTable[token.value]
 
-                # Is it a function?
-                if symbol == :function
-                    ast << Function.new(token.value, parse(state, ')'))
-                end
-
-                # Is it a variable?
-                if symbol == :variable
-                    @errors << "variables un-implemented"
-                end
-
-                @errors << "Unknown symbol '%s'" % symbol
-            end
-
-            # Handle numbers, ( these are the only terminals )
-            if token.type == :number
-                ast << Number.new(token.value)
-            end
-
-            # Handle string literals 
-            if token.type == :string
-                ast << String.new(token.value)
-            end
-
-            # Stop parsing when we see this token
-            if token.value == stopOn
-                return ast
-            end
+        # Is it a function?
+        if symbol == :function
+          ast << Function.new(token.value, parse(state, ')'))
         end
 
+        # Is it a variable?
+        if symbol == :variable
+          @errors << "variables un-implemented"
+        end
+
+        @errors << "Unknown symbol '%s'" % symbol
+      end
+
+      # Handle numbers, ( these are the only terminals )
+      if token.type == :number
+        ast << Number.new(token.value)
+      end
+
+      # Handle string literals 
+      if token.type == :string
+        ast << String.new(token.value)
+      end
+
+      # Stop parsing when we see this token
+      if token.value == stopOn
         return ast
-
+      end
     end
-
+    return ast
+  end
 end
 
 
 # Taken from orange 
 # https://github.com/macournoyer/orange.git
 class Generator
-    include LLVM
+  include LLVM
+  
+  PCHAR = Type.pointer(Type::Int8Ty)
+  INT   = Type::Int32Ty
+  
+  def initialize(mod = LLVM::Module.new("orange"), function=nil)
+    @module   = mod
+    @locals   = {}
+  
+    @function = function || @module.get_or_insert_function("main", Type.function(INT, [INT, Type.pointer(PCHAR)]))
+    @entry_block = @function.create_block.builder
+  end
+  
+  def preamble
+    define_external_functions
+  end
+  
+  def new_string(value)
+    @entry_block.create_global_string_ptr(value)
+  end
+  
+  def new_number(value)
+    value.llvm
+  end
+  
+  def call(func, *args)
+    f = @module.get_function(func)
+    @entry_block.call(f, *args)
+  end
+  
+  def assign(name, value)
+    ptr = @entry_block.alloca(value_type(value), 0)
+    @entry_block.store(value, ptr)
+    @locals[name] = ptr
+  end
+  
+  def load(name)
+    @entry_block.load(@locals[name])
+  end
+  
+  def function(name)
+    func = @module.get_or_insert_function(name, Type.function(INT, []))
+    generator = Generator.new(@module, func)
+    yield generator
+    generator.finish
+  end
+  
+  def finish
+    @entry_block.return(0.llvm)
+  end
+  
+  def optimize
+    PassManager.new.run(@module)
+  end
+  
+  def run
+    ExecutionEngine.get(@module)
+    ExecutionEngine.run_function(@function, 0.llvm, 0.llvm)
+  end
+  
+  def to_file(file)
+    @module.write_bitcode(file)
+  end
+  
+  def inspect
+    @module.inspect
+  end
+  
+  def define_external_functions
+    @module.external_function("printf", Type.function(INT, [PCHAR], true))
+    @module.external_function("puts", Type.function(INT, [PCHAR]))
+    @module.external_function("read", Type.function(INT, [INT, PCHAR, INT]))
+    @module.external_function("exit", Type.function(INT, [INT]))
+  end
     
-    PCHAR = Type.pointer(Type::Int8Ty)
-    INT   = Type::Int32Ty
-    
-    def initialize(mod = LLVM::Module.new("orange"), function=nil)
-        @module   = mod
-        @locals   = {}
-      
-        @function = function || @module.get_or_insert_function("main", Type.function(INT, [INT, Type.pointer(PCHAR)]))
-        @entry_block = @function.create_block.builder
-    end
-    
-    def preamble
-        define_external_functions
-    end
-    
-    def new_string(value)
-        @entry_block.create_global_string_ptr(value)
-    end
-    
-    def new_number(value)
-        value.llvm
-    end
-    
-    def call(func, *args)
-      f = @module.get_function(func)
-      @entry_block.call(f, *args)
-    end
-    
-    def assign(name, value)
-      ptr = @entry_block.alloca(value_type(value), 0)
-      @entry_block.store(value, ptr)
-      @locals[name] = ptr
-    end
-    
-    def load(name)
-      @entry_block.load(@locals[name])
-    end
-    
-    def function(name)
-      func = @module.get_or_insert_function(name, Type.function(INT, []))
-      generator = Generator.new(@module, func)
-      yield generator
-      generator.finish
-    end
-    
-    def finish
-      @entry_block.return(0.llvm)
-    end
-    
-    def optimize
-      PassManager.new.run(@module)
-    end
-    
-    def run
-      ExecutionEngine.get(@module)
-      ExecutionEngine.run_function(@function, 0.llvm, 0.llvm)
-    end
-    
-    def to_file(file)
-      @module.write_bitcode(file)
-    end
-    
-    def inspect
-      @module.inspect
-    end
-    
-    private
-      def define_external_functions
-        @module.external_function("printf", Type.function(INT, [PCHAR], true))
-        @module.external_function("puts", Type.function(INT, [PCHAR]))
-        @module.external_function("read", Type.function(INT, [INT, PCHAR, INT]))
-        @module.external_function("exit", Type.function(INT, [INT]))
-      end
-      
-      TYPE_MAPPING = { 11 => PCHAR, 7 => INT }
-      def value_type(value)
-        TYPE_MAPPING[value.type.type_id]
-      end
+  TYPE_MAPPING = { 11 => PCHAR, 7 => INT }
+  def value_type(value)
+    TYPE_MAPPING[value.type.type_id]
   end
 end
 
-
-
-end
