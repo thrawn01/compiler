@@ -3,7 +3,7 @@
 from llvm import *
 from llvm.core import *
 import unittest, logging, sys
-from ollie import Lexer,Parser,Function,Number,Generator
+from ollie import Lexer,Parser,FunctionCall,Number,Generator
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 log = logging.getLogger( "test" )
@@ -15,7 +15,7 @@ class ParserTest(unittest.TestCase):
     state = parser.lex( "add(1,2)" )
     ast = parser.parse(state, "")
 
-    assert(Function == ast[0].__class__)
+    assert(FunctionCall == ast[0].__class__)
     self.assertEquals("add", ast[0].name)
     self.assertEquals(2, len(ast[0].args))
     assert(Number == ast[0].args[0].__class__)
@@ -35,6 +35,7 @@ class ParserTest(unittest.TestCase):
     self.assertCompile( "sub(add(1,4),1)", 4 );
     self.assertCompile( "add(mul(4,4),1)", 17 );
     self.assertCompile( "div(mul(4,4),div(10,1))", 1.6 );
+    self.assertCompile( "add({ add(1,1) }, 2)", 4 );
 
 
     #g = Orange::Generator.new

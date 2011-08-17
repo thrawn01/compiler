@@ -30,7 +30,7 @@ class LexerState():
     return token 
 
 
-class Function():
+class FunctionCall():
 
   def __init__(self, name, args, func):
     self.name = name
@@ -50,10 +50,13 @@ class Number():
     return Constant.real( Type.double(), int(self.value)) 
 
 
-class String():
+class Block():
 
-  def initialize(self, value):
-    self.value = value
+  def __init__(self, body):
+    self.body = body
+    
+  def compile(self, builder):
+    return self.body[0].compile(builder)
 
 
 class Lexer():
@@ -159,7 +162,7 @@ class Parser():
 
         # Is it a function?
         if 'function' in symbol:
-          ast.append(Function(token.value(), self.parse(state, ')'), symbol['function']))
+          ast.append(FunctionCall(token.value(), self.parse(state, ')'), symbol['function']))
 
         # Is it a variable?
         if symbol == 'variable':
@@ -167,13 +170,12 @@ class Parser():
 
         self.errors.append( "Unknown symbol '%s'" % symbol )
 
-      # Handle numbers, ( these are the only terminals )
+      # Handle numbers
       if token.type == 'number':
         ast.append(Number(token.value()))
-
-      # Handle string literals 
-      if token.type == 'string':
-        ast.append(String(token.value()))
+      
+      if token.value() == '{':
+        ast.append(Block(self.parse(state, '}')))
 
       # Stop parsing when we see this token
       if token.value() == stopOn:
