@@ -32,13 +32,13 @@ class LexerState():
 
 class Function():
 
-  def __init__(self, name, args):
+  def __init__(self, name, args, func):
     self.name = name
     self.args = args
+    self.func = func
     
   def compile(self, builder):
-    if self.name == 'add':
-      return builder.fadd(self.args[0].compile(builder), self.args[1].compile(builder))
+    return self.func(builder,self.args)
         
 
 class Number():
@@ -139,7 +139,10 @@ class Lexer():
 class Parser():
   
   def __init__(self):
-    self.symbolTable = { 'add':'function' }
+    self.symbolTable = { 'add': { 'function': lambda builder, args: builder.fadd(args[0].compile(builder), args[1].compile(builder)) },
+                         'sub': { 'function': lambda builder, args: builder.fsub(args[0].compile(builder), args[1].compile(builder)) },
+                         'mul': { 'function': lambda builder, args: builder.fmul(args[0].compile(builder), args[1].compile(builder)) },
+                         'div': { 'function': lambda builder, args: builder.fdiv(args[0].compile(builder), args[1].compile(builder)) } }
     self.errors = []
  
   def lex(self, input):
@@ -155,8 +158,8 @@ class Parser():
         symbol = self.symbolTable[token.value()]
 
         # Is it a function?
-        if symbol == 'function':
-          ast.append(Function(token.value(), self.parse(state, ')')))
+        if 'function' in symbol:
+          ast.append(Function(token.value(), self.parse(state, ')'), symbol['function']))
 
         # Is it a variable?
         if symbol == 'variable':

@@ -20,15 +20,22 @@ class ParserTest(unittest.TestCase):
     self.assertEquals(2, len(ast[0].args))
     assert(Number == ast[0].args[0].__class__)
     assert(Number == ast[0].args[1].__class__)
-
-  def test_generator(self):
+ 
+  def assertCompile(self, source, testValue ):
     parser = Parser()
-    ast = parser.parse(parser.lex( "add(1,2)" ), "")
+    ast = parser.parse(parser.lex( source ), "")
     gen = Generator().compile(ast)
-
-    print gen.module
     result = gen.execute()
-    self.assertEquals(result.as_real(Type.double()), 3);
+    print gen.module
+    self.assertEquals(result.as_real(Type.double()), testValue);
+     
+  def test_generator(self):
+    self.assertCompile( "add(1,2)", 3 );
+    self.assertCompile( "sub(5,1)", 4 );
+    self.assertCompile( "sub(add(1,4),1)", 4 );
+    self.assertCompile( "add(mul(4,4),1)", 17 );
+    self.assertCompile( "div(mul(4,4),div(10,1))", 1.6 );
+
 
     #g = Orange::Generator.new
     #g.preamble
