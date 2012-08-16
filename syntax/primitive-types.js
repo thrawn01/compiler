@@ -1,13 +1,14 @@
 
+
 // Work in progress
 def(filter, Function<Array<Int>, (Array<Int> items)>, FilterFunction condition, {
   def(i,Int,0)
   def(j,Int,0)
-  def(result,Array<Int>,Array<Int,5>())
+  def(result,Array<Int>,5)
 
-  return loop( {
+  loop({
     if(greater-than(length(items),i),{ 
-      return result
+      return(result)
     })
     if(condition(items[i]), {
        assign(result[j],1) // difference between assign and def?
@@ -16,3 +17,6 @@ def(filter, Function<Array<Int>, (Array<Int> items)>, FilterFunction condition, 
       
 // Code here
 })
+
+72.3.252.142
+
