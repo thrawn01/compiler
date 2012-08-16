@@ -49,3 +49,8 @@ syntax while <some bnf parser syntax>
        // collected from the bnf parser syntax
       (while, conditional, block))
 
+
+// you can specify class level methods in the AST by passing in 'this' or 'self'
+(my-method, self, arg1, arg2)
+// 'this' would be a special form, that refers to the class instance the AST is parsing
+
