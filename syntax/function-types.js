@@ -94,3 +94,29 @@ typedef Function<Boolean (Any)> FilterFunction
 Array<Any> filter(Array<Any> array, FilterFunction condition) {
 
 }
+
+// Scala
+def test(predicate: Int): Int => Int = {
+  { prefix: Int => predicate + prefix }
+}
+
+// Scala simplified form
+def test2(predicate: Int)(prefix: Int): Int = {
+  predicate + prefix
+}
+
+// Possible Ollie form
+def Func<Int (Int)> test(Int predicate) {
+  { |Int prefix| predicate + prefix }
+}
+
+/*
+   C++ level language should support generics
+   The python/ruby level language should default to Any with the 
+   option of using generics to create a specific container
+
+   list = List(1, "2", 3) <-- is actually List<Any>(1, "2", 3)
+   but if you wanted to
+   list = List<Int>(1, 2, 3)
+
+*/
