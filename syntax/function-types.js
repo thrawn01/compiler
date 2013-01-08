@@ -120,3 +120,49 @@ def Func<Int (Int)> test(Int predicate) {
    list = List<Int>(1, 2, 3)
 
 */
+
+/* 'lazy' means that the expression that results in a 'String message' will
+   not be evaluated until used this is an example of 'pass by name' or
+   'call by name'. this is an optimization
+*/
+def log(lazy String message) {
+    if this.debug { 
+        print message
+    }
+}
+
+// In the following example, the string concat will only occur if the var
+// 'message' is printed to the screen
+log("Error '" + error + "'")
+
+// Lazy can also be used in if/else conditions
+// Inspired by Option and Box from scala/lift
+def else(lazy Any expression) {
+    if not this.condition {
+        this.value = expression
+    }
+}
+// Example usage
+value = map.get("key").else("default-value")
+
+// We could add 'else' and 'then' methods to the superclass of all objects 
+// type 'Any' could implement these, and any subclasses could over write
+// them
+
+// You could then add type specific syntax and do stuff like
+value = map if "key" else "default-value"
+// 'if' would be syntax rule that calls map.if() 
+// 'else' would be a syntax rule that matches Any.else()
+// I'm not sure I like this at all, it would interfier with
+// the normal 'if / else' syntax
+
+// What if you ment
+map = if "value" else "other value"
+// but typed
+map if "value" else "other value"
+// consequences would be un-intentional
+
+// There should be some syntax rules we should avoid, this will 
+// lessen confusion for the user
+
+
