@@ -166,3 +166,46 @@ map if "value" else "other value"
 // lessen confusion for the user
 
 
+// Recursive method
+def Int sum(List<Int> args) {
+    if (args.length == 0) 0
+    else args.head + sum(args.tail)
+}
+
+// Variable arguments the * at the end means it expects the rest of the arguments
+// to be a Iterable or Sequence (or just a List<Int>)
+def Int sum(Int args*) {
+    sum(args)
+}
+
+// sum([1,2,3,4])
+// or
+// sum(1,2,3,4)
+
+// Default arguments and string interp
+def log(String msg, String type = "debug") {
+    println("type - %s - %s" % [type, msg])
+}
+
+// This would be in conflict with the above, not allowed
+def log(String msg) {
+    println(msg)
+}
+
+// Pattern matching
+def log(Any object) {
+    match object {
+        case String { println(object) }
+        case SomeObj { println(object.toString()) }
+    }
+}
+
+// Pattern matching on object contents
+def match-something(Any object) {
+    match object {
+        case "derrick" { println("Is a 'derrick' String") }
+        case 1 { println("Is Integer 1") }
+        case 10 { println("Is Integer 10") }
+        case Object("arg1", "arg2") { println("Is Object arg1 and arg2") }
+    }
+}
