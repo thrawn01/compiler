@@ -125,8 +125,17 @@ def Func<Int (Int)> test(Int predicate) {
    not be evaluated until used this is an example of 'pass by name' or
    'call by name'. this is an optimization
 */
-def log(lazy String message) {
+def log(Lazy String message) {
     if this.debug { 
+        print message
+    }
+}
+
+// We could also use tic's as the lazy eval indicator
+value = `"lazy" + "eval" + "this"`
+// Method call would look like this
+def log(String `message`) {
+    if this.debug {
         print message
     }
 }
@@ -137,7 +146,7 @@ log("Error '" + error + "'")
 
 // Lazy can also be used in if/else conditions
 // Inspired by Option and Box from scala/lift
-def else(lazy Any expression) {
+def else(Lazy Any expression) {
     if not this.condition {
         this.value = expression
     }
@@ -174,7 +183,7 @@ def Int sum(List<Int> args) {
 
 // Variable arguments the * at the end means it expects the rest of the arguments
 // to be a Iterable or Sequence (or just a List<Int>)
-def Int sum(Int args*) {
+def Int sum(Int *args) {
     sum(args)
 }
 
