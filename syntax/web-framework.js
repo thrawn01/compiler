@@ -53,11 +53,43 @@ class MyLift extends LiftLikeController {
   
   // Define some routes to match the page
   self.route.add("/lift", "/public/index.html")
+  // Introduce the ajax controller
+  self.ajax = AjaxController("lift/ajax")
+  self.route.add(self.ajax)
 
   // Modify the session and return the modified session
   def Session index(Session session) {
     // Preform transforms on the session dom
-    session.dom.select("#time *")
+    // select takes a anon function that returns an String or Element
+    // and replaces the selected item with that (In this case, it is a string)
+    session.dom.select("#time *", { Date.now().toString() })
+  }
+
+  // A method called on a <form> in index.html
+  def Session renderUserForm(Session session) {
+    session.dom.select("id=age", {
+        // Add a onSubmit attribute to the <input>
+        // that calls a generated /rest/{guid} handled by the AjaxController()
+        // when the ajax controller calls the /rest/{guid}, the function passed
+        // here is called
+        self.ajax.onSubmit({ |element|
+            if element.value.toInt() > 20 {
+                // Do something
+            }
+        })
+    })
+
+    // Server side validation the entered username is available
+    session.dom.select("id=username", {
+        self.ajax.onChange({ |element|
+            // See if the username is available
+            if element.value == "derrick" {
+                session.dom.select("id=username-checkbox", { |element|
+                    element.href = "check-box.png"
+                })
+            }
+        })
+    })
   }
 }
 
